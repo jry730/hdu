@@ -1,0 +1,149 @@
+ #include<iostream>
+// #include<vector>
+ #include<algorithm>
+ using namespace std;
+ 
+ const int maxn = 100000;
+ int n, m;
+ 
+ struct mode {
+    int ms;
+    int cn;
+    double peo;
+    int index;
+ };
+ 
+ //按金牌总数
+ bool cmp1(mode &a, mode &b) {
+    return a.ms>b.ms;
+ }
+ //按奖牌总数
+ bool cmp2(mode &a, mode &b) {
+     return a.cn>b.cn;
+ }
+ //按金牌人口比例
+ bool cmp3(mode &a, mode &b) {
+     return a.ms/a.peo > b.ms/b.peo;
+ }
+ //按奖牌人口比例
+ bool cmp4(mode &a, mode &b) {
+     return a.cn/a.peo > b.cn/b.peo;
+ }
+ 
+ mode V[maxn];
+ mode V1[maxn];
+ int K[maxn][2];
+ int M[maxn];
+ 
+ void px() {
+     int i;
+     //按金牌
+     sort(V, V+m, cmp1);
+ 
+     M[0] = 1;
+ 
+     K[V[0].index][0] = 1;
+     K[V[0].index][1] = 1;
+     for(i=1; i<m; i++) {
+         M[i] = i+1;
+ 
+         if(V[i-1].ms == V[i].ms) {//如果碰到与前一个国家的排序依据相等就拥有相同的名次
+         
+             M[i] = M[i-1];
+         }
+         K[V[i].index][0] = M[i];
+         K[V[i].index][1] = 1;
+     }
+     //按奖牌
+     sort(V, V+m, cmp2);
+
+     M[0] = 1;
+ 
+      if(K[V[0].index][0]>1) {//如果原来的排名不够现在的佳即更改为现在的名次
+          K[V[0].index][0] = 1;
+          K[V[0].index][1] = 2;
+      }
+     for(i=1; i<m; i++) {
+        M[i] = i+1;
+  
+          if(V[i-1].cn == V[i].cn) {
+              M[i] = M[i-1];
+          }
+          if(K[V[i].index][0] > M[i]) {
+              K[V[i].index][0] = M[i];
+              K[V[i].index][1] = 2;
+          }
+      }
+      //按金牌人口比例
+      sort(V, V+m, cmp3);
+  
+      M[0] = 1;
+  
+      if(K[V[0].index][0]>1) {
+          K[V[0].index][0] = 1;
+          K[V[0].index][1] = 3;
+      }
+      for(i=1; i<m; i++) {
+          M[i] = i+1;
+      
+          if(V[i-1].ms/V[i-1].peo == V[i].ms/V[i].peo) {
+              M[i] = M[i-1];
+         }
+         if(K[V[i].index][0] > M[i]) {
+              K[V[i].index][0] = M[i];
+              K[V[i].index][1] = 3;
+          }
+   }
+     //按奖牌人口比例
+      sort(V, V+m, cmp4);
+  
+    M[0] = 1;
+ 
+     if(K[V[0].index][0]>1) {
+         K[V[0].index][0] = 1;
+         K[V[0].index][1] = 4;
+     }
+     for(i=1; i<m; i++) {
+        M[i] = i+1;
+     
+         if(V[i-1].cn/V[i-1].peo == V[i].cn/V[i].peo) { //如果碰到与前一个国家的排序依据相等就拥有相同的名次
+             M[i] = M[i-1];
+         }
+      
+         if(K[V[i].index][0] > M[i]) { //如果原来的排名不够现在的佳即更改为现在的名次    
+             K[V[i].index][0] = M[i];
+             K[V[i].index][1] = 4;
+         }
+     }
+ }
+ 
+ 
+ int main() {
+     int i, j;
+     int a, b, c;
+     int flag[maxn];
+     while(cin>>n>>m) {
+         for(i=0; i<n; i++) {
+             scanf("%d%d%lf", &V1[i].ms, &V1[i].cn, &V1[i].peo);
+             V1[i].index = i;
+         }
+         
+         for(i=0; i<m; i++) {
+          scanf("%d", &a);
+             V[i].ms = V1[a].ms;
+             V[i].cn = V1[a].cn;
+             V[i].peo = V1[a].peo;
+             V[i].index = V1[a].index;        
+             flag[i] = a;  //用一个数组记录下要排序的国号，初始时一直错就是只使用了index来记录国号，
+                           //但是最后输出时是用i来做下标，所以碰巧sample可以有重合的结果导致误导。
+         }
+ 
+         px();
+ 
+         for(i=0; i<m; i++) {
+             printf("%d:%d\n",K[flag[i]][0], K[flag[i]][1]);  //按国号来输出排名
+         }
+         printf("\n");
+     }
+     return 0;
+}
