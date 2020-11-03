@@ -1,0 +1,120 @@
+#include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <algorithm>
+using namespace std;
+ 
+const int MAX_N = (200 + 22);
+int N, M;
+ 
+struct Node {
+	int x, y;
+	Node() {}
+	Node(int _x, int _y) : x(_x), y(_y) {}
+}node[17];
+ 
+int n;
+char g[MAX_N][MAX_N];
+/*
+if kind == 0: 0 degree.
+if kind == 1: 90 degree.
+if kind == 2: 180 degree.
+if kind == 3: 270 degree.
+*/
+ 
+bool Judge(int x, int y)
+{
+	if (x < 0 || x >= N || y < 0 || y >= M) return true;
+	if (g[x][y] == '.') return true;
+	return false;
+}
+ 
+int find(int x, int y)
+{
+	for (int i = 0; i < n; ++i) {
+		if (node[i].x == x && node[i].y == y) return i;
+	}
+	return -1;
+}
+ 
+bool vis[17];
+bool gao(int s, int kind)
+{
+	for (int i = 0; i < n; ++i) if ((1 << i) & s) {
+		memset(vis, false, sizeof(vis));
+		vis[i] = true;
+		int x = node[i].x, y = node[i].y;
+		if (kind == 0) {
+			if (!Judge(x - 1, y) || !Judge(x, y + 1)) continue;
+			if (x - 1 >= 0)vis[find(x - 1, y)] = true;
+			if (y + 1 < M) vis[find(x, y + 1)] = true;
+		} else if (kind == 1) {
+			if (!Judge(x, y + 1) || !Judge(x + 1, y)) continue;
+			if (y + 1 < M) vis[find(x, y + 1)] = true;
+			if (x + 1 < N) vis[find(x + 1, y)] = true;
+		} else if (kind == 2) {
+			if (!Judge(x + 1, y) || !Judge(x, y - 1)) continue;
+			if (x + 1 < N) vis[find(x + 1, y)] = true;
+			if (y - 1 >= 0) vis[find(x, y - 1)] = true;
+		} else if (kind == 3) {
+			if (!Judge(x, y - 1) || !Judge(x - 1, y)) continue;
+			if (y - 1 >= 0) vis[find(x, y - 1)] = true;
+			if (x - 1 >= 0) vis[find(x - 1, y)] = true;
+		}
+ 
+		for (int j = 0; j < n; ++j) {
+			if (j != i && ((1 << j) & s)) {
+				x = node[j].x, y = node[j].y;
+				vis[j] = true;
+				if (!Judge(x - 1, y) || !Judge(x, y + 1)) break;
+				if (x - 1 >= 0)vis[find(x - 1, y)] = true;
+				if (y + 1 < M) vis[find(x, y + 1)] = true;
+			}
+		}
+ 
+		bool tag = true;
+		for (int i = 0; i < n; ++i) if (!vis[i]) {
+			tag = false; break;
+		}
+ 
+		if (tag) return true;
+	}
+ 
+	return false;
+}
+ 
+int main()
+{
+	while (~scanf("%d %d", &N, &M)) {
+		if (N == 0 && M == 0) break;
+		n = 0;
+		for (int i = 0; i < N; ++i) {
+			scanf("%s", g[i]);
+			for (int j = 0; j < M; ++j) if (g[i][j] == '.') {
+				node[n++] = Node(i, j);
+			}
+		}
+ 
+		if (n == 0) {
+			puts("0");
+			continue;
+		}
+ 
+		int ans = -1;
+		for (int s = 0; s < (1 << n); ++s) {
+			for (int kind = 0; kind < 4; ++kind) {
+				if (gao(s, kind)) {
+					int x = s, cnt = 0;
+					while (x) {
+						++cnt;
+						x &= (x - 1);
+					}
+					ans = (ans == -1 ? cnt : min(cnt, ans));
+				}
+			}
+		}
+ 
+		printf("%d\n", ans);
+	}
+	return 0;
+} 
